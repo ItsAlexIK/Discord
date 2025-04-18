@@ -12,7 +12,8 @@ import {
 } from "@api/Commands";
 import * as DataStore from "@api/DataStore";
 import { addMessagePreSendListener, MessageSendListener, removeMessagePreSendListener } from "@api/MessageEvents";
-import { Devs } from "@utils/constants";
+
+import { Devs, EquicordDevs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin from "@utils/types";
 import {
