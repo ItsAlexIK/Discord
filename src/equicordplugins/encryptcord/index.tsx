@@ -12,7 +12,6 @@ import {
 } from "@api/Commands";
 import * as DataStore from "@api/DataStore";
 import { addMessagePreSendListener, MessageSendListener, removeMessagePreSendListener } from "@api/MessageEvents";
-
 import { Devs, EquicordDevs } from "@utils/constants";
 import { sleep } from "@utils/misc";
 import definePlugin from "@utils/types";
@@ -141,7 +140,7 @@ const ChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
 export default definePlugin({
     name: "Encryptcord",
     description: "End-to-end encryption in Discord!",
-    authors: [Devs.Inbestigator, Devs.ItsAlex],
+    authors: [Devs.Inbestigator, EquicordDevs.ItsAlex],
     patches: [
         {
             find: "INTERACTION_APPLICATION_COMMAND_INVALID_VERSION",
