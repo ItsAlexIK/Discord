@@ -138,7 +138,7 @@ const ChatBarIcon: ChatBarButtonFactory = ({ isMainChat }) => {
 };
 
 export default definePlugin({
-    name: "FixCord",
+    name: "Encryptcord",
     description: "End-to-end encryption in Discord!",
     authors: [Devs.Inbestigator, Devs.ItsAlex],
     patches: [
