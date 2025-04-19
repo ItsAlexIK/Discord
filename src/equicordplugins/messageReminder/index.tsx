@@ -234,12 +234,16 @@ function openReminderForm() {
         }
         .reminder-input-group {
             display: flex;
+            justify-content: space-around;
             gap: 8px;
+            width: 100%;
         }
         .reminder-input-group input[type="number"] {
-            width: 100px;
+            flex: 1;
         }
         .reminder-history-button {
+            flex: 2;
+            width: 100%;
             padding: 10px;
             background: #4f545c;
             color: white;
