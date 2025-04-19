@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import { addChatBarButton, ChatBarButton, ChatBarButtonFactory, removeChatBarButton } from "@api/ChatButtons";
-import { EquicordDevs } from "@utils/constants";
-import definePlugin from "@utils/types";
 import { sendBotMessage } from "@api/Commands";
+import { EquicordDevs } from "@utils/constants";
 import { localStorage } from "@utils/localStorage";
-import { useState } from "@webpack/common";
-import { ModalRoot, ModalHeader, ModalContent, ModalFooter, openModal } from "@utils/modal";
-import { Button, Forms, TextInput, SelectedChannelStore } from "@webpack/common";
+import { ModalContent, ModalFooter, ModalHeader, ModalRoot, openModal } from "@utils/modal";
+import definePlugin from "@utils/types";
+import { Button, Forms, SelectedChannelStore, TextInput, useState } from "@webpack/common";
 import "./styles.css";
 
 interface Reminder {
@@ -73,7 +72,7 @@ function ReminderForm(props: any) {
                         <Forms.FormTitle tag="h5">Unit</Forms.FormTitle>
                         <select
                             value={unit}
-                            onChange={(e) => setUnit(e.target.value)}
+                            onChange={e => setUnit(e.target.value)}
                             className="reminder-select"
                         >
                             <option value="60">Minutes</option>
@@ -220,7 +219,7 @@ function checkReminders() {
     );
 
     remindersToTrigger.forEach(reminder => {
-        showMessage(reminder.message, 'trigger', currentTime);
+        showMessage(reminder.message, "trigger", currentTime);
         reminder.triggered = true;
         saveRemindersToStorage();
     });
@@ -236,14 +235,14 @@ function saveRemindersToStorage() {
         id: reminder.id,
         triggered: reminder.triggered
     }));
-    localStorage.setItem('equicord-reminders', JSON.stringify(remindersToSave));
+    localStorage.setItem("equicord-reminders", JSON.stringify(remindersToSave));
 }
 
 /**
  * Loads saved reminders from localStorage
  */
 function loadRemindersFromStorage() {
-    const savedReminders = localStorage.getItem('equicord-reminders');
+    const savedReminders = localStorage.getItem("equicord-reminders");
     if (savedReminders) {
         try {
             activeReminders = JSON.parse(savedReminders);
@@ -257,18 +256,18 @@ function loadRemindersFromStorage() {
 /**
  * Displays a reminder message in the chat
  */
-function showMessage(message: string, type: 'set' | 'trigger' = 'trigger', exprireAt?: any) {
+function showMessage(message: string, type: "set" | "trigger" = "trigger", exprireAt?: any) {
     const channelId = SelectedChannelStore.getChannelId();
     if (!channelId) return;
 
-    const emoji = type === 'set' ? '⏰' : '🔔';
+    const emoji = type === "set" ? "⏰" : "🔔";
 
     const embed: any = {
         description: message,
-        color: type === 'set' ? 0x5865F2 : 0xED4245,
-        title: type === 'set' ? '⏰ Reminder Set ⏰' : '🔔 Reminder 🔔',
+        color: type === "set" ? 0x5865F2 : 0xED4245,
+        title: type === "set" ? "⏰ Reminder Set ⏰" : "🔔 Reminder 🔔",
         footer: {
-            text: type === 'set' ? 'Reminder will trigger' : 'Reminder triggered'
+            text: type === "set" ? "Reminder will trigger" : "Reminder triggered"
         },
         timestamp: new Date(exprireAt).toISOString(),
     };
@@ -280,7 +279,7 @@ function showMessage(message: string, type: 'set' | 'trigger' = 'trigger', expri
         embeds: [embed]
     } as any);
 
-    if (type === 'trigger') {
+    if (type === "trigger") {
         try {
             const audio = new Audio();
             audio.src = "https://discord.com/assets/dd920c06a01e5bb8b09678581e29d56f.mp3";
@@ -308,7 +307,7 @@ function setReminder(message: string, timeInSeconds: number) {
 
     activeReminders.push(reminder);
     saveRemindersToStorage();
-    showMessage(message, 'set', reminderTime);
+    showMessage(message, "set", reminderTime);
 }
 
 const ChatBarIcon: ChatBarButtonFactory = () => {
@@ -337,8 +336,8 @@ export default definePlugin({
             checkReminders();
         }, 1000);
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
                 checkReminders();
             }
         });
@@ -347,6 +346,6 @@ export default definePlugin({
         removeChatBarButton("Reminder");
         if (globalCheckInterval) clearInterval(globalCheckInterval);
         activeReminders = [];
-        localStorage.removeItem('equicord-reminders');
+        localStorage.removeItem("equicord-reminders");
     }
 });
