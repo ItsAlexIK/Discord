@@ -1,10 +1,8 @@
-// ==UserScript==
-// @name         Message Reminder Enhanced
-// @version      1.0.0
-// @description  Fully featured, persistent reminders, list management, and rich UI
-// @author       .Diabelo & ItsAlex
-// ==/UserScript==
-
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2024 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 import { addChatBarButton, ChatBarButton, ChatBarButtonFactory, removeChatBarButton } from "@api/ChatButtons";
 import { EquicordDevs } from "@utils/constants";
 import definePlugin from "@utils/types";
