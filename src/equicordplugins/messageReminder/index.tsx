@@ -7,11 +7,10 @@ import { addChatBarButton, ChatBarButton, ChatBarButtonFactory, removeChatBarBut
 import { EquicordDevs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { sendBotMessage } from "@api/Commands";
-import { SelectedChannelStore } from "@webpack/common";
 import { localStorage } from "@utils/localStorage";
 import { useState } from "@webpack/common";
 import { ModalRoot, ModalHeader, ModalContent, ModalFooter, openModal } from "@utils/modal";
-import { Button, Forms, TextInput } from "@webpack/common";
+import { Button, Forms, TextInput, SelectedChannelStore } from "@webpack/common";
 import "./styles.css";
 
 interface Reminder {
