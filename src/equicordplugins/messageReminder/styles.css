@@ -82,13 +82,31 @@
     margin-bottom: 0;
 }
 
-select.reminder-input {
+.reminder-select {
+    background-color: #1E1F22;
+    border: none;
+    border-radius: 4px;
+    color: #DBDEE1;
+    font-size: 16px;
+    padding: 8px 32px 8px 12px;
+    width: 100%;
     cursor: pointer;
     appearance: none;
-    padding-right: 30px;
     background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.59 8.59L12 13.17L7.41 8.59L6 10L12 16L18 10L16.59 8.59Z' fill='%23B5BAC1'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
+    background-size: 20px;
+}
+
+.reminder-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.6);
+}
+
+.reminder-select option {
+    background-color: #2B2D31;
+    color: #DBDEE1;
+    padding: 8px;
 }
 
 .reminder-button,

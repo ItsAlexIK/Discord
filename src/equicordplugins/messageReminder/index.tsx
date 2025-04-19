@@ -9,8 +9,9 @@ import definePlugin from "@utils/types";
 import { sendBotMessage } from "@api/Commands";
 import { SelectedChannelStore } from "@webpack/common";
 import { localStorage } from "@utils/localStorage";
-import { useState, useEffect } from "@webpack/common";
-import { Button, TextInput } from "@webpack/common";
+import { useState } from "@webpack/common";
+import { ModalRoot, ModalHeader, ModalContent, ModalFooter, openModal } from "@utils/modal";
+import { Button, Forms, TextInput } from "@webpack/common";
 import "./styles.css";
 
 interface Reminder {
@@ -24,7 +25,7 @@ interface Reminder {
 let activeReminders: Reminder[] = [];
 let globalCheckInterval: NodeJS.Timeout | null = null;
 
-function ReminderForm({ onClose }: { onClose: () => void; }) {
+function ReminderForm(props: any) {
     const [message, setMessage] = useState("");
     const [time, setTime] = useState("");
     const [unit, setUnit] = useState("60");
@@ -36,96 +37,127 @@ function ReminderForm({ onClose }: { onClose: () => void; }) {
         if (isNaN(timeValue) || timeValue <= 0) return;
 
         setReminder(message, timeValue * parseInt(unit));
-        onClose();
+        props.onClose();
     };
 
     return (
-        <div className="reminder-form-modal">
-            <div className="reminder-header">
-                <svg width="24" height="24" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12 22c-.825 0-1.413-.587-1.413-1.412h4c0 .825-.588 1.412-1.413 1.412H12Zm-9-3v-2h2V9c0-2.925 1.95-5.075 4.95-5.075 3.1 0 5.05 2.15 5.05 5.075v7h2v2H3Z" />
-                </svg>
-                <h3 className="reminder-title">Set Reminder</h3>
-                <button className="reminder-close" onClick={onClose}>×</button>
-            </div>
-            <div className="reminder-content">
+        <ModalRoot {...props}>
+            <ModalHeader>
+                <Forms.FormTitle tag="h3" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12 22c-.825 0-1.413-.587-1.413-1.412h4c0 .825-.588 1.412-1.413 1.412H12Zm-9-3v-2h2V9c0-2.925 1.95-5.075 4.95-5.075 3.1 0 5.05 2.15 5.05 5.075v7h2v2H3Z" />
+                    </svg>
+                    Set Reminder
+                </Forms.FormTitle>
+            </ModalHeader>
+
+            <ModalContent>
+                <Forms.FormTitle tag="h5" style={{ marginTop: "10px" }}>Reminder Message</Forms.FormTitle>
                 <TextInput
                     value={message}
                     onChange={setMessage}
                     placeholder="What would you like to be reminded about?"
-                    className="reminder-input"
                 />
-                <div className="reminder-input-group">
-                    <TextInput
-                        type="number"
-                        value={time}
-                        onChange={setTime}
-                        placeholder="Time"
-                        min="1"
-                        className="reminder-input"
-                    />
-                    <select
-                        value={unit}
-                        onChange={(e) => setUnit(e.target.value)}
-                        className="reminder-input"
-                    >
-                        <option value="60">Minutes</option>
-                        <option value="1">Seconds</option>
-                        <option value="3600">Hours</option>
-                    </select>
-                    <button
-                        onClick={() => setShowHistory(true)}
-                        className="reminder-history-button"
-                    >
-                        History
-                    </button>
+
+                <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+                    <div style={{ flex: 1 }}>
+                        <Forms.FormTitle tag="h5">Time</Forms.FormTitle>
+                        <TextInput
+                            type="number"
+                            value={time}
+                            onChange={setTime}
+                            placeholder="Time"
+                            min="1"
+                        />
+                    </div>
+                    <div style={{ width: "120px" }}>
+                        <Forms.FormTitle tag="h5">Unit</Forms.FormTitle>
+                        <select
+                            value={unit}
+                            onChange={(e) => setUnit(e.target.value)}
+                            className="reminder-select"
+                        >
+                            <option value="60">Minutes</option>
+                            <option value="1">Seconds</option>
+                            <option value="3600">Hours</option>
+                        </select>
+                    </div>
                 </div>
-                <button
+            </ModalContent>
+
+            <ModalFooter>
+                <Button
+                    color={Button.Colors.BRAND}
                     onClick={handleSubmit}
-                    className="reminder-button"
-                    style={{ marginTop: "16px" }}
                 >
                     Set Reminder
-                </button>
-            </div>
-            {showHistory && <ReminderHistory onClose={() => setShowHistory(false)} />}
-        </div>
+                </Button>
+                <Button
+                    color={Button.Colors.BRAND}
+                    onClick={() => setShowHistory(true)}
+                    style={{ marginRight: "8px" }}
+                >
+                    History
+                </Button>
+                <Button
+                    color={Button.Colors.TRANSPARENT}
+                    look={Button.Looks.LINK}
+                    onClick={props.onClose}
+                >
+                    Cancel
+                </Button>
+            </ModalFooter>
+
+            {showHistory && <ReminderHistory {...props} onClose={() => setShowHistory(false)} />}
+        </ModalRoot>
     );
 }
 
-function ReminderHistory({ onClose }: { onClose: () => void; }) {
+function ReminderHistory(props: any) {
     const [activeTab, setActiveTab] = useState("expired");
+    const [reminders, setReminders] = useState(activeReminders);
     const currentTime = Date.now();
 
-    const filteredReminders = activeReminders.filter(reminder => {
+    const filteredReminders = reminders.filter(reminder => {
         const isExpired = currentTime >= reminder.timestamp;
         return activeTab === "active" ? !isExpired : isExpired;
     });
 
+    const handleDelete = (reminderId: string) => {
+        activeReminders = activeReminders.filter(r => r.id !== reminderId);
+        setReminders(activeReminders);
+        saveRemindersToStorage();
+    };
+
     return (
-        <div className="reminder-history-modal">
-            <div className="reminder-header">
-                <svg width="24" height="24" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12 22c-.825 0-1.413-.587-1.413-1.412h4c0 .825-.588 1.412-1.413 1.412H12Zm-9-3v-2h2V9c0-2.925 1.95-5.075 4.95-5.075 3.1 0 5.05 2.15 5.05 5.075v7h2v2H3Z" />
-                </svg>
-                <h3 className="reminder-title">Reminder History</h3>
-                <button className="reminder-close" onClick={onClose}>×</button>
-            </div>
-            <div className="reminder-content">
-                <div className="reminder-tabs">
-                    <button
-                        className={`reminder-tab ${activeTab === "active" ? "active" : ""}`}
+        <ModalRoot {...props}>
+            <ModalHeader>
+                <Forms.FormTitle tag="h3" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12 22c-.825 0-1.413-.587-1.413-1.412h4c0 .825-.588 1.412-1.413 1.412H12Zm-9-3v-2h2V9c0-2.925 1.95-5.075 4.95-5.075 3.1 0 5.05 2.15 5.05 5.075v7h2v2H3Z" />
+                    </svg>
+                    Reminder History
+                </Forms.FormTitle>
+            </ModalHeader>
+
+            <ModalContent>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+                    <Button
+                        color={activeTab === "active" ? Button.Colors.BRAND : Button.Colors.TRANSPARENT}
                         onClick={() => setActiveTab("active")}
+                        size={Button.Sizes.SMALL}
                     >
                         Active
-                    </button>
-                    <button
-                        className={`reminder-tab ${activeTab === "expired" ? "active" : ""}`}
+                    </Button>
+                    <Button
+                        color={activeTab === "expired" ? Button.Colors.BRAND : Button.Colors.TRANSPARENT}
                         onClick={() => setActiveTab("expired")}
+                        size={Button.Sizes.SMALL}
                     >
                         Expired
-                    </button>
+                    </Button>
                 </div>
+
                 <div className="reminder-history-list">
                     {filteredReminders.length === 0 ? (
                         <div className="reminder-history-empty">
@@ -142,25 +174,36 @@ function ReminderHistory({ onClose }: { onClose: () => void; }) {
                                             {date.toLocaleString()}
                                         </div>
                                     </div>
-                                    <div className="reminder-history-item-status">
-                                        EXPIRED
+                                    <div className="reminder-history-item-status" style={{
+                                        color: activeTab === "expired" ? "#ED4245" : "#2ecc71",
+                                        background: activeTab === "expired" ? "rgba(237, 66, 69, 0.1)" : "rgba(46, 204, 113, 0.1)",
+                                    }}>
+                                        {activeTab === "expired" ? "EXPIRED" : "ACTIVE"}
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            activeReminders = activeReminders.filter(r => r.id !== reminder.id);
-                                            saveRemindersToStorage();
-                                        }}
-                                        className="reminder-history-delete"
+                                    <Button
+                                        color={Button.Colors.RED}
+                                        size={Button.Sizes.SMALL}
+                                        onClick={() => handleDelete(reminder.id)}
                                     >
                                         ×
-                                    </button>
+                                    </Button>
                                 </div>
                             );
                         })
                     )}
                 </div>
-            </div>
-        </div>
+            </ModalContent>
+
+            <ModalFooter>
+                <Button
+                    color={Button.Colors.TRANSPARENT}
+                    look={Button.Looks.LINK}
+                    onClick={props.onClose}
+                >
+                    Close
+                </Button>
+            </ModalFooter>
+        </ModalRoot>
     );
 }
 
@@ -270,17 +313,16 @@ function setReminder(message: string, timeInSeconds: number) {
 }
 
 const ChatBarIcon: ChatBarButtonFactory = () => {
-    const [showForm, setShowForm] = useState(false);
+    const handleClick = () => {
+        openModal(props => <ReminderForm {...props} />);
+    };
 
     return (
-        <>
-            <ChatBarButton tooltip="Set Reminder" onClick={() => setShowForm(true)}>
-                <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12 22c-.825 0-1.413-.587-1.413-1.412h4c0 .825-.588 1.412-1.413 1.412H12Zm-9-3v-2h2V9c0-2.925 1.95-5.075 4.95-5.075 3.1 0 5.05 2.15 5.05 5.075v7h2v2H3Z" />
-                </svg>
-            </ChatBarButton>
-            {showForm && <ReminderForm onClose={() => setShowForm(false)} />}
-        </>
+        <ChatBarButton tooltip="Set Reminder" onClick={handleClick}>
+            <svg width="25" height="25" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 22c-.825 0-1.413-.587-1.413-1.412h4c0 .825-.588 1.412-1.413 1.412H12Zm-9-3v-2h2V9c0-2.925 1.95-5.075 4.95-5.075 3.1 0 5.05 2.15 5.05 5.075v7h2v2H3Z" />
+            </svg>
+        </ChatBarButton>
     );
 };
 
